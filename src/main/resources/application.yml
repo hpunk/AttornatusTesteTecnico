@@ -1,0 +1,31 @@
+#All profiles
+server:
+  port: 8002
+spring:
+  profiles:
+    active: prod
+  datasource:
+    driverClassName: org.h2.Driver
+    username: test
+    passwords: pass
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+
+---
+
+# 'test' profile only
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:testdb
+---
+
+# 'prod' profile only
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:h2:mem:proddb
