@@ -3,7 +3,6 @@ package com.gaav.Attornatus.Teste.Backend.domain.controller.person;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import lombok.Data;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,7 +14,7 @@ public class PersonDto {
 
     public static PersonDto fromEntity(Person person){
         PersonDto dto = new PersonDto();
-        dto.setId(person.getId());
+        dto.setId(person.getPersonId());
         dto.setName(person.getName());
         dto.setBirthDate(person.getBirthDate());
         return dto;
@@ -24,7 +23,7 @@ public class PersonDto {
     public Person toEntity(){
         Person person = new Person();
         person.setName(this.name);
-        person.setId(this.id);
+        person.setPersonId(this.id);
         person.setBirthDate(this.birthDate);
         return person;
     }

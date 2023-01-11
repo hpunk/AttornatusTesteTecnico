@@ -83,7 +83,7 @@ public class PersonServiceImpl implements PersonService {
         val saved = saveAddress(address, person);
 
         AddressDto response = AddressDto.fromEntity(saved);
-        response.setPersonId(person.getId());
+        response.setPersonId(person.getPersonId());
 
         return response;
     }
@@ -92,7 +92,7 @@ public class PersonServiceImpl implements PersonService {
     public List<AddressDto> listPersonAddresses(UUID personId){
         val person = getPersonById(personId);
 
-        return addressRepository.findAllByPersonId(person.getId())
+        return addressRepository.findAllByPerson(person)
                 .stream()
                 .map(AddressDto::fromEntity)
                 .collect(Collectors.toList());
@@ -101,12 +101,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     public AddressDto registerPersonMainAddress(UUID personId, UUID addressId){
         val person = getPersonById(personId);
-        List<Address> existingAddresses = addressRepository.findAllByPersonId(person.getId());
+        List<Address> existingAddresses = addressRepository.findAllByPerson(person);
 
         val toUpdate = existingAddresses
                         .stream()
                         .filter(address ->
-                            address.getId().equals(addressId) || address.getIsMain()
+                            address.getAddressId().equals(addressId) || address.getIsMain()
                         ).map(address -> {
                             address.setIsMain(!address.getIsMain());
                             return address;
@@ -133,9 +133,11 @@ public class PersonServiceImpl implements PersonService {
         val addressEntity = address.toEntity();
         addressEntity.setIsMain(false);
 
-        addressEntity.setPersonId(person.getId());
+        person.getAddresses().add(addressEntity);
 
-        return addressRepository.save(addressEntity);
+        personRepository.save(person);
+
+        return addressEntity;
     }
 
 }

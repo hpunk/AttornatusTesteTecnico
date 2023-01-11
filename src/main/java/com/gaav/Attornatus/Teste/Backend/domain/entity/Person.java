@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +15,8 @@ import java.util.UUID;
 public class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column
-    private UUID id;
+    @Column(name = "id_pessoa")
+    private UUID personId;
     @Column(name = "nome", nullable = false)
     @NotNull
     private String name;

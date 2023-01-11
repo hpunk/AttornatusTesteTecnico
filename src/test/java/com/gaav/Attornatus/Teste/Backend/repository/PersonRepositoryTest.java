@@ -34,10 +34,10 @@ public class PersonRepositoryTest {
 
         val response = repository.save(person1);
 
-        val saved = repository.findById(response.getId());
+        val saved = repository.findById(response.getPersonId());
         log.info("saved {}", saved);
         Assertions.assertThat(saved.isPresent()).isTrue();
-        Assertions.assertThat(saved.get().getId()).isEqualTo(response.getId());
+        Assertions.assertThat(saved.get().getPersonId()).isEqualTo(response.getPersonId());
         Assertions.assertThat(saved.get().getName()).isEqualTo(person1.getName());
         Assertions.assertThat(saved.get().getBirthDate()).isEqualTo(person1.getBirthDate());
     }
@@ -50,12 +50,12 @@ public class PersonRepositoryTest {
 
         val saved = repository.save(person1);
 
-        val response = repository.findById(saved.getId());
+        val response = repository.findById(saved.getPersonId());
 
         log.info("found {}", response);
 
         Assertions.assertThat(response.isPresent()).isTrue();
-        Assertions.assertThat(response.get().getId()).isEqualTo(saved.getId());
+        Assertions.assertThat(response.get().getPersonId()).isEqualTo(saved.getPersonId());
 
     }
 
@@ -72,6 +72,6 @@ public class PersonRepositoryTest {
         log.info("found {}", response);
 
         Assertions.assertThat(response.isPresent()).isTrue();
-        Assertions.assertThat(response.get().getId()).isEqualTo(saved.getId());
+        Assertions.assertThat(response.get().getPersonId()).isEqualTo(saved.getPersonId());
     }
 }
