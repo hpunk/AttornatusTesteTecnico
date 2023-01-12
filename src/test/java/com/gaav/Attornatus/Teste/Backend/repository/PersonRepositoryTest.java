@@ -1,36 +1,22 @@
 package com.gaav.Attornatus.Teste.Backend.repository;
 
+import com.gaav.Attornatus.Teste.Backend.base.BaseRepositoryTest;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import java.time.LocalDate;
-import java.time.Month;
-
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Slf4j
-@ActiveProfiles("test")
-@ExtendWith(SpringExtension.class)
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class PersonRepositoryTest {
+public class PersonRepositoryTest extends BaseRepositoryTest {
 
     @Autowired
     PersonRepository repository;
 
     @Test
     public void givenAPersonCreationRequestWhenRequestIsExecutedThenEntityCanBeFetchedFromDB(){
-        Person person1 = new Person();
-        person1.setName("Carlos");
-        person1.setBirthDate(LocalDate.of(2000, Month.JANUARY,24));
+        Person person1 = getPerson();
 
         val response = repository.save(person1);
 
@@ -44,9 +30,7 @@ public class PersonRepositoryTest {
 
     @Test
     public void givenAFindPersonByCodeRequestWhenPersonExistsThenReturnPerson(){
-        Person person1 = new Person();
-        person1.setName("Luiz");
-        person1.setBirthDate(LocalDate.of(1990, Month.FEBRUARY,15));
+        Person person1 = getPerson();
 
         val saved = repository.save(person1);
 
@@ -61,17 +45,16 @@ public class PersonRepositoryTest {
 
     @Test
     public void givenAFindByNameAndBirthDateRequestWhenPersonExistsThenReturnPerson(){
-        Person person1 = new Person();
-        person1.setName("Marquinhos");
-        person1.setBirthDate(LocalDate.of(1978, Month.JULY,24));
+        Person person1 = getPerson();
 
         val saved = repository.save(person1);
 
-        val response = repository.findByNameAndBirthDate(person1.getName(), person1.getBirthDate());
+        val response = repository.findAllByNameAndBirthDate(person1.getName(), person1.getBirthDate());
 
         log.info("found {}", response);
 
-        Assertions.assertThat(response.isPresent()).isTrue();
-        Assertions.assertThat(response.get().getPersonId()).isEqualTo(saved.getPersonId());
+        Assertions.assertThat(response.isEmpty()).isFalse();
+        Assertions.assertThat(response.size()).isEqualTo(1);
+        Assertions.assertThat(response.get(0).getPersonId()).isEqualTo(saved.getPersonId());
     }
 }

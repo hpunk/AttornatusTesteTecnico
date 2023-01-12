@@ -1,13 +1,17 @@
 package com.gaav.Attornatus.Teste.Backend.service.impl;
 
-import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressDto;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressPaginatedFilter;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressResponse;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedFilter;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedResponse;
-import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonDto;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonResponse;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Address;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonAlreadyExistsException;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonNotFoundException;
+import com.gaav.Attornatus.Teste.Backend.repository.AddressPagingRepository;
 import com.gaav.Attornatus.Teste.Backend.repository.AddressRepository;
 import com.gaav.Attornatus.Teste.Backend.repository.PersonPagingRepository;
 import com.gaav.Attornatus.Teste.Backend.repository.PersonRepository;
@@ -26,22 +30,23 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class PersonServiceImpl implements PersonService {
     private final AddressRepository addressRepository;
+    private final AddressPagingRepository addressPagingRepository;
     private final PersonRepository personRepository;
     private final PersonPagingRepository personPagingRepository;
 
     @Override
-    public PersonDto createPerson(PersonDto personDto){
-        val existingPerson = personRepository.findByNameAndBirthDate(personDto.getName(), personDto.getBirthDate());
+    public PersonResponse createPerson(PersonRequest personDto){
+        val existingPerson = personRepository.findAllByNameAndBirthDate(personDto.getName(), personDto.getBirthDate());
 
-        if(existingPerson.isPresent())
+        if(!existingPerson.isEmpty())
             throw new PersonAlreadyExistsException(personDto.getName(), personDto.getBirthDate());
 
         val response = personRepository.save(personDto.toEntity());
-        return PersonDto.fromEntity(response);
+        return PersonResponse.fromEntity(response);
     }
 
     @Override
-    public PersonDto editPerson(PersonDto personDto){
+    public PersonResponse editPerson(PersonRequest personDto){
         val existingPerson = getPersonById(personDto.getId());
 
         val toModify = existingPerson;
@@ -49,26 +54,26 @@ public class PersonServiceImpl implements PersonService {
         toModify.setName(personDto.getName());
 
         val edited = personRepository.save(toModify);
-        return PersonDto.fromEntity(edited);
+        return PersonResponse.fromEntity(edited);
     }
 
     @Override
-    public PersonDto getPerson(UUID personId){
+    public PersonResponse getPerson(UUID personId){
         val person = getPersonById(personId);
-        return PersonDto.fromEntity(person);
+        return PersonResponse.fromEntity(person);
     }
 
     @Override
-    public PaginatedResponse<PersonDto> listPeople(PaginatedFilter filter){
+    public PaginatedResponse<PersonResponse> listPeople(PaginatedFilter filter){
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getRows());
         val paginatedPeople = personPagingRepository.findAll(pageable);
 
-        PaginatedResponse<PersonDto> response = new PaginatedResponse<>();
+        PaginatedResponse<PersonResponse> response = new PaginatedResponse<>();
         response.setData(
                 paginatedPeople
                         .getContent()
                         .stream()
-                        .map(PersonDto::fromEntity)
+                        .map(PersonResponse::fromEntity)
                         .collect(Collectors.toList())
         );
         response.setCount(paginatedPeople.getTotalElements());
@@ -77,29 +82,32 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public AddressDto createAddressForPerson(AddressDto address){
+    public AddressResponse createAddressForPerson(AddressRequest address){
         val person = getPersonById(address.getPersonId());
 
         val saved = saveAddress(address, person);
 
-        AddressDto response = AddressDto.fromEntity(saved);
+        AddressResponse response = AddressResponse.fromEntity(saved);
         response.setPersonId(person.getPersonId());
 
         return response;
     }
 
     @Override
-    public List<AddressDto> listPersonAddresses(UUID personId){
-        val person = getPersonById(personId);
-
-        return addressRepository.findAllByPerson(person)
-                .stream()
-                .map(AddressDto::fromEntity)
-                .collect(Collectors.toList());
+    public PaginatedResponse<AddressResponse> listPersonAddresses(AddressPaginatedFilter filter){
+        val person = getPersonById(filter.getPersonId());
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getRows());
+        val pagedData = addressPagingRepository.findAllByPersonPersonId(person.getPersonId(), pageable);
+        PaginatedResponse<AddressResponse> response = new PaginatedResponse<>();
+        response.setRows(filter.getRows());
+        response.setPage(filter.getPage());
+        response.setCount(pagedData.getTotalElements());
+        response.setData(pagedData.getContent().stream().map(AddressResponse::fromEntity).collect(Collectors.toList()));
+        return response;
     }
 
     @Override
-    public AddressDto registerPersonMainAddress(UUID personId, UUID addressId){
+    public AddressResponse registerPersonMainAddress(UUID personId, UUID addressId){
         val person = getPersonById(personId);
         List<Address> existingAddresses = addressRepository.findAllByPerson(person);
 
@@ -114,7 +122,7 @@ public class PersonServiceImpl implements PersonService {
 
         val response = addressRepository.saveAll(toUpdate);
 
-        return AddressDto.fromEntity(getMainAddress(response));
+        return AddressResponse.fromEntity(getMainAddress(response));
     }
 
     private Address getMainAddress(List<Address> addresses) {
@@ -129,7 +137,7 @@ public class PersonServiceImpl implements PersonService {
         return person.get();
     }
 
-    private Address saveAddress(AddressDto address, Person person){
+    private Address saveAddress(AddressRequest address, Person person){
         val addressEntity = address.toEntity();
         addressEntity.setIsMain(false);
 

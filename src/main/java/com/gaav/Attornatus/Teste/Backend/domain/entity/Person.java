@@ -26,7 +26,7 @@ public class Person {
     @OneToMany(
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.EAGER,
+            fetch = FetchType.LAZY,
             mappedBy = "person"
     )
     private List<Address> addresses = new ArrayList<>();

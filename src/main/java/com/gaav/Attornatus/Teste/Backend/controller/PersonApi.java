@@ -1,8 +1,8 @@
 package com.gaav.Attornatus.Teste.Backend.controller;
 
-import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressDto;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressResponse;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedFilter;
-import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonDto;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,17 +12,17 @@ import java.util.UUID;
 
 public interface PersonApi {
 
-    PersonDto createPerson(@NotNull PersonDto personDto);
+    PersonRequest createPerson(@NotNull PersonRequest personDto);
 
-    PersonDto editPerson(@NotNull PersonDto personDto);
+    PersonRequest editPerson(@NotNull PersonRequest personDto);
 
-    PersonDto getPerson(@NotNull UUID personId);
+    PersonRequest getPerson(@NotNull UUID personId);
 
-    List<PersonDto> listPeople(@Valid PaginatedFilter filter);
+    List<PersonRequest> listPeople(@Valid PaginatedFilter filter);
 
-    AddressDto createAddressForPerson(@NotNull AddressDto addressRequest);
+    AddressResponse createAddressForPerson(@NotNull AddressResponse addressRequest);
 
-    List<AddressDto> listPersonAddresses(@NotBlank UUID personId);
+    List<AddressResponse> listPersonAddresses(@NotBlank UUID personId);
 
-    AddressDto registerPersonMainAddress(@NotBlank UUID personId, @NotNull UUID addressId);
+    AddressResponse registerPersonMainAddress(@NotBlank UUID personId, @NotNull UUID addressId);
 }
