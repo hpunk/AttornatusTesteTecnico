@@ -12,6 +12,7 @@ import com.gaav.Attornatus.Teste.Backend.service.AddressService;
 import com.gaav.Attornatus.Teste.Backend.service.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.val;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -44,12 +45,8 @@ public class AddressServiceImpl implements AddressService {
         val person = personService.getPersonById(filter.getPersonId());
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getRows());
         val pagedData = addressPagingRepository.findAllByPersonPersonId(person.getPersonId(), pageable);
-        PaginatedResponse<AddressResponse> response = new PaginatedResponse<>();
-        response.setRows(filter.getRows());
-        response.setPage(filter.getPage());
-        response.setCount(pagedData.getTotalElements());
-        response.setData(pagedData.getContent().stream().map(AddressResponse::fromEntity).collect(Collectors.toList()));
-        return response;
+
+        return buildPaginatedResponse(pagedData);
     }
 
     @Override
@@ -62,20 +59,34 @@ public class AddressServiceImpl implements AddressService {
                 .filter(address ->
                         address.getAddressId().equals(addressId) || address.getIsMain()
                 ).map(address -> {
-                    address.setIsMain(!address.getIsMain());
+                    address.setIsMain(address.getAddressId().equals(addressId));
                     return address;
                 }).collect(Collectors.toList());
 
-        val response = addressRepository.saveAll(toUpdate);
+        person.setAddresses(toUpdate);
 
-        return AddressResponse.fromEntity(getMainAddress(response));
+        personService.savePersonEntity(person);
+
+        return AddressResponse.fromEntity(getMainAddress(toUpdate));
+    }
+
+    private PaginatedResponse<AddressResponse> buildPaginatedResponse (Page<Address> pagedResponse) {
+        PaginatedResponse<AddressResponse> response = new PaginatedResponse<>();
+        response.setRows(pagedResponse.getSize());
+        response.setPage(pagedResponse.getNumber());
+        response.setCount(pagedResponse.getTotalElements());
+        response.setData(pagedResponse.getContent().stream().map(AddressResponse::fromEntity).collect(Collectors.toList()));
+        return response;
     }
 
     private Address saveAddress(AddressRequest address, Person person){
         val addressEntity = address.toEntity();
         addressEntity.setIsMain(false);
+        addressEntity.setPerson(person);
 
-        person.getAddresses().add(addressEntity);
+        val currentAddresses = addressRepository.findAllByPerson(person);
+        currentAddresses.add(addressEntity);
+        person.setAddresses(currentAddresses);
 
         personService.savePersonEntity(person);
 

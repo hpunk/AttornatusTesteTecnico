@@ -155,5 +155,31 @@ public class PersonServiceTest {
         verify(personPagingRepository, times(1)).findAll(PageRequest.of(page,rows));
     }
 
+    // Get person
 
+    @Test
+    public void givenAGetPersonRequestWhenPersonDoesNotExistThenExceptionIsThrown() {
+        final UUID personId = UUID.randomUUID();
+
+        when(personRepository.findById(personId)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(PersonNotFoundException.class, () -> service.getPersonById(personId));
+        verify(personRepository, times(1)).findById(personId);
+    }
+
+    @Test
+    public void givenAGetPersonRequestWhenPersonExistsThenFetchedDataIsReturnedAndNoExceptionsAreThrown() {
+        final UUID personId = UUID.randomUUID();
+
+        Person storedPerson = new Person();
+        storedPerson.setPersonId(personId);
+        storedPerson.setName("Carlinhos");
+        storedPerson.setBirthDate(LocalDate.now());
+
+        when(personRepository.findById(personId)).thenReturn(Optional.of(storedPerson));
+
+        service.getPersonById(personId);
+
+        verify(personRepository, times(1)).findById(personId);
+    }
 }
