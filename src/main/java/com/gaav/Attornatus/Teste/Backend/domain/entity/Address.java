@@ -24,7 +24,7 @@ public class Address {
     private String number;
     @Column(name = "cidade", nullable = false)
     private String city;
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "personId")
     @ToString.Exclude
     private Person person;

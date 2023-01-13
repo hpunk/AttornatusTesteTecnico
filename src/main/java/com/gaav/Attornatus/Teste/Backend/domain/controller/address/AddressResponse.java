@@ -10,6 +10,8 @@ import java.util.UUID;
 public class AddressResponse {
     @JsonProperty("id_pessoa")
     private UUID personId;
+    @JsonProperty("id_endereco")
+    private UUID addressId;
     @JsonProperty("e_principal")
     private Boolean isMain;
     @JsonProperty("logradouro")
@@ -23,6 +25,7 @@ public class AddressResponse {
 
     public static AddressResponse fromEntity(Address entity) {
         AddressResponse dto = new AddressResponse();
+        dto.setAddressId(entity.getAddressId());
         dto.setZip(entity.getZip());
         dto.setIsMain(entity.getIsMain());
         dto.setStreet(entity.getStreet());

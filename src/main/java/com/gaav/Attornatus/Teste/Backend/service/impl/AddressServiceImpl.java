@@ -7,6 +7,7 @@ import com.gaav.Attornatus.Teste.Backend.domain.controller.address.MainAddressRe
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedResponse;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Address;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
+import com.gaav.Attornatus.Teste.Backend.exceptions.AddressNotFoundException;
 import com.gaav.Attornatus.Teste.Backend.repository.AddressPagingRepository;
 import com.gaav.Attornatus.Teste.Backend.repository.AddressRepository;
 import com.gaav.Attornatus.Teste.Backend.service.AddressService;
@@ -46,36 +47,58 @@ public class AddressServiceImpl implements AddressService {
         Pageable pageable = PageRequest.of(filter.getPage(), filter.getRows());
         val pagedData = addressPagingRepository.findAllByPersonPersonId(person.getPersonId(), pageable);
 
-        return buildPaginatedResponse(pagedData);
+        return buildPaginatedResponse(pagedData, person);
     }
 
     @Override
     public AddressResponse registerPersonMainAddress(MainAddressRequest request){
         val person = personService.getPersonById(request.getPersonId());
+
+        if(!addressRepository.existsById(request.getAddressId()))
+            throw new AddressNotFoundException(request.getAddressId());
+
         List<Address> existingAddresses = addressRepository.findAllByPerson(person);
 
-        val toUpdate = existingAddresses
+        val toUpdate = getAddressesToUpdate(existingAddresses, request);
+
+        updateIsMainFieldInAddresses(person, toUpdate, request);
+
+        val updatedPerson = personService.savePersonEntity(person);
+
+        val response = AddressResponse.fromEntity(getMainAddress(updatedPerson.getAddresses()));
+        response.setPersonId(person.getPersonId());
+        return response;
+    }
+
+    private void updateIsMainFieldInAddresses(Person person, List<Address> toUpdate, MainAddressRequest request){
+        for(int index = 0; index < person.getAddresses().size() ; index++){
+            val address = person.getAddresses().get(index);
+            if(toUpdate.contains(address))
+                person.getAddresses().get(index).setIsMain(address.getAddressId().equals(request.getAddressId()));
+        }
+    }
+
+    private List<Address> getAddressesToUpdate(List<Address> currentAddresses, MainAddressRequest request) {
+        return currentAddresses
                 .stream()
                 .filter(address ->
                         address.getAddressId().equals(request.getAddressId()) || address.getIsMain()
-                ).map(address -> {
-                    address.setIsMain(address.getAddressId().equals(request.getAddressId()));
-                    return address;
-                }).collect(Collectors.toList());
-
-        person.setAddresses(toUpdate);
-
-        personService.savePersonEntity(person);
-
-        return AddressResponse.fromEntity(getMainAddress(toUpdate));
+                ).collect(Collectors.toList());
     }
 
-    private PaginatedResponse<AddressResponse> buildPaginatedResponse (Page<Address> pagedResponse) {
+    private PaginatedResponse<AddressResponse> buildPaginatedResponse (Page<Address> pagedResponse, Person person) {
         PaginatedResponse<AddressResponse> response = new PaginatedResponse<>();
         response.setRows(pagedResponse.getSize());
         response.setPage(pagedResponse.getNumber());
         response.setCount(pagedResponse.getTotalElements());
-        response.setData(pagedResponse.getContent().stream().map(AddressResponse::fromEntity).collect(Collectors.toList()));
+
+        response.setData(pagedResponse.getContent()
+                .stream()
+                .map(address -> {
+                    val dto = AddressResponse.fromEntity(address);
+                    dto.setPersonId(person.getPersonId());
+                    return dto;
+                }).collect(Collectors.toList()));
         return response;
     }
 
@@ -84,13 +107,11 @@ public class AddressServiceImpl implements AddressService {
         addressEntity.setIsMain(false);
         addressEntity.setPerson(person);
 
-        val currentAddresses = addressRepository.findAllByPerson(person);
-        currentAddresses.add(addressEntity);
-        person.setAddresses(currentAddresses);
+        person.getAddresses().add(addressEntity);
 
-        personService.savePersonEntity(person);
+        val updatedPerson = personService.savePersonEntity(person);
 
-        return addressEntity;
+        return updatedPerson.getAddresses().get(updatedPerson.getAddresses().size()-1);
     }
 
     private Address getMainAddress(List<Address> addresses) {

@@ -1,6 +1,7 @@
 package com.gaav.Attornatus.Teste.Backend.configuration;
 
 import com.gaav.Attornatus.Teste.Backend.domain.controller.exception.ErrorResponse;
+import com.gaav.Attornatus.Teste.Backend.exceptions.AddressNotFoundException;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonAlreadyExistsException;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PersonNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse managePersonNotFoundException(PersonNotFoundException ex) {
+        return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+    }
+
+    @ExceptionHandler(AddressNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse manageAddressNotFoundException(AddressNotFoundException ex) {
         return new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage());
     }
 
