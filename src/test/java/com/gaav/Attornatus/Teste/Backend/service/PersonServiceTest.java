@@ -147,7 +147,7 @@ public class PersonServiceTest {
 
         when(personRepository.findById(personId)).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(PersonNotFoundException.class, () -> service.getPersonById(personId));
+        Assertions.assertThrows(PersonNotFoundException.class, () -> service.getPerson(personId));
         verify(personRepository, times(1)).findById(personId);
     }
 
@@ -159,7 +159,7 @@ public class PersonServiceTest {
 
         when(personRepository.findById(personId)).thenReturn(Optional.of(storedPerson));
 
-        service.getPersonById(personId);
+        service.getPerson(personId);
 
         verify(personRepository, times(1)).findById(personId);
     }
