@@ -82,8 +82,7 @@ public class PersonServiceTest {
 
         Person storedPerson = instantiatePerson(key);
 
-        PersonUpdateRequest request = (PersonUpdateRequest) instantiateRequest();
-        request.setId(key);
+        PersonUpdateRequest request = instantiateUpdateRequest(key);
 
         Person requestEntityWithId = request.toEntity();
         requestEntityWithId.setPersonId(key);
@@ -101,8 +100,7 @@ public class PersonServiceTest {
     public void givenAnUpdatePersonRequestWhenPersonDoesNotExistThenExceptionIsThrown(){
         final UUID key = UUID.randomUUID();
 
-        PersonUpdateRequest request = (PersonUpdateRequest) instantiateRequest();
-        request.setId(key);
+        PersonUpdateRequest request = instantiateUpdateRequest(key);
 
         when(personRepository.findById(key)).thenReturn(Optional.empty());
 
@@ -179,6 +177,15 @@ public class PersonServiceTest {
         PersonBaseRequest request = new PersonBaseRequest();
         request.setName("Eduarda");
         request.setBirthDate(Date.valueOf(LocalDate.of(1999, Month.JANUARY, 30)));
+
+        return request;
+    }
+
+    private PersonUpdateRequest instantiateUpdateRequest(UUID id) {
+        PersonUpdateRequest request = new PersonUpdateRequest();
+        request.setName("Eduarda");
+        request.setBirthDate(Date.valueOf(LocalDate.of(1999, Month.JANUARY, 30)));
+        request.setId(id);
 
         return request;
     }

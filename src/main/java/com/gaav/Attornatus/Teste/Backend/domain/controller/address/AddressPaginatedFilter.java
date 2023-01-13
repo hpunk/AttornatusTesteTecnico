@@ -9,7 +9,11 @@ import java.util.UUID;
 
 @Data
 public class AddressPaginatedFilter extends PaginatedFilter {
-    @JsonProperty("id_pessoa")
     @NotNull(message = "O id da pessoa deve ser informado")
     private UUID personId;
+
+    @JsonProperty("personId")
+    public void setId_pessoa(UUID personId){
+        this.personId = personId;
+    }
 }

@@ -3,6 +3,7 @@ package com.gaav.Attornatus.Teste.Backend.domain.controller.address;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Address;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.UUID;
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Data
 public class AddressRequest {
     @JsonProperty("id_pessoa")
+    @NotNull(message = "O id da pessoa deve ser informado")
     private UUID personId;
     @JsonProperty("e_principal")
     private Boolean isMain;
