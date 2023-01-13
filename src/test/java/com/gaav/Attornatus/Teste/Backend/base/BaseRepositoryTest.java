@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -20,7 +21,7 @@ public class BaseRepositoryTest {
     protected Person getPerson() {
         Person person = new Person();
         person.setName("Carlos");
-        person.setBirthDate(LocalDate.of(2000, Month.JANUARY,24));
+        person.setBirthDate(Date.valueOf(LocalDate.of(2000, Month.JANUARY,24)));
         return person;
     }
 
@@ -90,27 +91,27 @@ public class BaseRepositoryTest {
     protected List<Person> generateListOfPerson() {
         Person person1 = new Person();
         person1.setName("Carlos");
-        person1.setBirthDate(LocalDate.of(2000, Month.JANUARY,24));
+        person1.setBirthDate(Date.valueOf(LocalDate.of(2000, Month.JANUARY,24)));
 
         Person person2 = new Person();
         person2.setName("Marcos");
-        person2.setBirthDate(LocalDate.of(2001, Month.FEBRUARY,12));
+        person2.setBirthDate(Date.valueOf(LocalDate.of(2001, Month.FEBRUARY,12)));
 
         Person person3 = new Person();
         person3.setName("Luiza");
-        person3.setBirthDate(LocalDate.of(2002, Month.MARCH,12));
+        person3.setBirthDate(Date.valueOf(LocalDate.of(2002, Month.MARCH,12)));
 
         Person person4 = new Person();
         person4.setName("Joao");
-        person4.setBirthDate(LocalDate.of(1998, Month.DECEMBER,1));
+        person4.setBirthDate(Date.valueOf(LocalDate.of(1998, Month.DECEMBER,1)));
 
         Person person5 = new Person();
         person5.setName("Ze");
-        person5.setBirthDate(LocalDate.of(2010, Month.JANUARY,26));
+        person5.setBirthDate(Date.valueOf(LocalDate.of(2010, Month.JANUARY,26)));
 
         Person person6 = new Person();
         person6.setName("Maria");
-        person6.setBirthDate(LocalDate.of(2007, Month.JULY,7));
+        person6.setBirthDate(Date.valueOf(LocalDate.of(2007, Month.JULY,7)));
 
         return List.of(person1, person2, person3, person4, person5, person6);
     }

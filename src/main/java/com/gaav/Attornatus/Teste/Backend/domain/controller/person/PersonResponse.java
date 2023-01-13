@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.UUID;
 
 @Data
@@ -14,7 +14,7 @@ public class PersonResponse {
     @JsonProperty("nome")
     private String name;
     @JsonProperty("data_nascimento")
-    private LocalDate birthDate;
+    private Date birthDate;
     public static PersonResponse fromEntity(Person person){
         PersonResponse response = new PersonResponse();
         response.setId(person.getPersonId());

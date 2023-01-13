@@ -2,6 +2,7 @@ package com.gaav.Attornatus.Teste.Backend.service;
 
 import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressPaginatedFilter;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.address.AddressRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.address.MainAddressRequest;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Address;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonNotFoundException;
@@ -19,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -108,7 +110,8 @@ public class AddressServiceTest {
         when(addressPagingRepository.findAllByPersonPersonId(any(), any())).thenReturn(Page.empty());
         addressService.listPersonAddresses(filter);
 
-        verify(addressPagingRepository, times(1)).findAllByPersonPersonId(personId, PageRequest.of(defaultPage, defaultRows));
+        verify(addressPagingRepository,
+                times(1)).findAllByPersonPersonId(personId, PageRequest.of(defaultPage, defaultRows));
         verify(personService, times(1)).getPersonById(personId);
     }
 
@@ -127,7 +130,8 @@ public class AddressServiceTest {
         when(addressPagingRepository.findAllByPersonPersonId(any(), any())).thenReturn(Page.empty());
         addressService.listPersonAddresses(filter);
 
-        verify(addressPagingRepository, times(1)).findAllByPersonPersonId(personId, PageRequest.of(1, 5));
+        verify(addressPagingRepository,
+                times(1)).findAllByPersonPersonId(personId, PageRequest.of(1, 5));
         verify(personService, times(1)).getPersonById(personId);
     }
 
@@ -138,7 +142,8 @@ public class AddressServiceTest {
 
         when(personService.getPersonById(personId)).thenThrow(PersonNotFoundException.class);
 
-        Assertions.assertThrows(PersonNotFoundException.class, () -> addressService.registerPersonMainAddress(personId, UUID.randomUUID()));
+        Assertions.assertThrows(PersonNotFoundException.class,
+                () -> addressService.registerPersonMainAddress(getMainAddressRequest(personId, UUID.randomUUID())));
 
         verify(personService, times(1)).getPersonById(personId);
         verify(addressRepository, times(0)).findAllByPerson(any());
@@ -164,7 +169,7 @@ public class AddressServiceTest {
         when(personService.getPersonById(personId)).thenReturn(storedPerson);
         when(addressRepository.findAllByPerson(storedPerson)).thenReturn(List.of(address));
 
-        addressService.registerPersonMainAddress(personId, addressId);
+        addressService.registerPersonMainAddress(getMainAddressRequest(personId, addressId));
 
         verify(personService, times(1)).getPersonById(personId);
         verify(addressRepository, times(1)).findAllByPerson(any());
@@ -197,20 +202,28 @@ public class AddressServiceTest {
         personWithMainAddress.setAddresses(List.of(oldMainAddressAfter, newMainAddressAfter));
 
         when(personService.getPersonById(personId)).thenReturn(storedPerson);
-        when(addressRepository.findAllByPerson(storedPerson)).thenReturn(List.of(oldMainAddressBefore, newMainAddressBefore));
+        when(addressRepository.findAllByPerson(storedPerson))
+                .thenReturn(List.of(oldMainAddressBefore, newMainAddressBefore));
 
-        addressService.registerPersonMainAddress(personId, newMainAddressId);
+        addressService.registerPersonMainAddress(getMainAddressRequest(personId, newMainAddressId));
 
         verify(personService, times(1)).getPersonById(personId);
         verify(addressRepository, times(1)).findAllByPerson(any());
         verify(personService, times(1)).savePersonEntity(personWithMainAddress);
     }
 
+    private MainAddressRequest getMainAddressRequest(UUID personId, UUID addressId) {
+        val request = new MainAddressRequest();
+        request.setAddressId(addressId);
+        request.setPersonId(personId);
+
+        return request;
+    }
     private Person instantiatePerson(UUID id) {
         Person person = new Person();
         person.setPersonId(id);
         person.setName("Xiao");
-        person.setBirthDate(LocalDate.now());
+        person.setBirthDate(Date.valueOf(LocalDate.now()));
 
         return person;
     }

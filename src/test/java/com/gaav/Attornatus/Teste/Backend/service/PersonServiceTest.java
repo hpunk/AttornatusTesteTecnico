@@ -19,6 +19,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -43,9 +44,7 @@ public class PersonServiceTest {
     //Create person
     @Test
     public void givenACreatePersonRequestWhenNameAndBirthDateAreNotRegisteredYetThenPersonIsSaved(){
-        PersonRequest request = new PersonRequest();
-        request.setName("Eduarda");
-        request.setBirthDate(LocalDate.of(1999, Month.JANUARY, 30));
+        PersonRequest request = instantiateRequest();
 
         Person requestEntity = request.toEntity();
         Person requestEntityWithId = request.toEntity();
@@ -62,9 +61,7 @@ public class PersonServiceTest {
 
     @Test
     public void givenACreatePersonRequestWhenNameAndBirthDateAlreadyExistThenPersonExceptionIsThrown(){
-        PersonRequest request = new PersonRequest();
-        request.setName("Eduarda");
-        request.setBirthDate(LocalDate.of(1999, Month.JANUARY, 30));
+        PersonRequest request = instantiateRequest();
 
         Person requestEntityWithId = request.toEntity();
         requestEntityWithId.setPersonId(UUID.randomUUID());
@@ -82,14 +79,9 @@ public class PersonServiceTest {
     public void givenAnUpdatePersonRequestWhenPersonDoesExistThenUpdateIsExecuted(){
         final UUID key = UUID.randomUUID();
 
-        Person storedPerson = new Person();
-        storedPerson.setName("Eduarda");
-        storedPerson.setBirthDate(LocalDate.of(1990, Month.FEBRUARY, 15));
-        storedPerson.setPersonId(key);
+        Person storedPerson = instantiatePerson(key);
 
-        PersonRequest request = new PersonRequest();
-        request.setName("Eduarda");
-        request.setBirthDate(LocalDate.of(1999, Month.JANUARY, 30));
+        PersonRequest request = instantiateRequest();
         request.setId(key);
 
         Person requestEntityWithId = request.toEntity();
@@ -108,14 +100,7 @@ public class PersonServiceTest {
     public void givenAnUpdatePersonRequestWhenPersonDoesNotExistThenExceptionIsThrown(){
         final UUID key = UUID.randomUUID();
 
-        Person storedPerson = new Person();
-        storedPerson.setName("Eduarda");
-        storedPerson.setBirthDate(LocalDate.of(1990, Month.FEBRUARY, 15));
-        storedPerson.setPersonId(key);
-
-        PersonRequest request = new PersonRequest();
-        request.setName("Eduarda");
-        request.setBirthDate(LocalDate.of(1999, Month.JANUARY, 30));
+        PersonRequest request = instantiateRequest();
         request.setId(key);
 
         when(personRepository.findById(key)).thenReturn(Optional.empty());
@@ -171,15 +156,29 @@ public class PersonServiceTest {
     public void givenAGetPersonRequestWhenPersonExistsThenFetchedDataIsReturnedAndNoExceptionsAreThrown() {
         final UUID personId = UUID.randomUUID();
 
-        Person storedPerson = new Person();
-        storedPerson.setPersonId(personId);
-        storedPerson.setName("Carlinhos");
-        storedPerson.setBirthDate(LocalDate.now());
+        Person storedPerson = instantiatePerson(personId);
 
         when(personRepository.findById(personId)).thenReturn(Optional.of(storedPerson));
 
         service.getPersonById(personId);
 
         verify(personRepository, times(1)).findById(personId);
+    }
+
+    private Person instantiatePerson(UUID id) {
+        Person person = new Person();
+        person.setName("Eduarda");
+        person.setBirthDate(Date.valueOf(LocalDate.of(1990, Month.FEBRUARY, 15)));
+        person.setPersonId(id);
+
+        return person;
+    }
+
+    private PersonRequest instantiateRequest() {
+        PersonRequest request = new PersonRequest();
+        request.setName("Eduarda");
+        request.setBirthDate(Date.valueOf(LocalDate.of(1999, Month.JANUARY, 30)));
+
+        return request;
     }
 }
