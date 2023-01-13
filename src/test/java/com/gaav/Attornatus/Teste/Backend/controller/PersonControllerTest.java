@@ -1,10 +1,11 @@
 package com.gaav.Attornatus.Teste.Backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gaav.Attornatus.Teste.Backend.controller.impl.PersonController;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedResponse;
-import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonBaseRequest;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonResponse;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonUpdateRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import com.gaav.Attornatus.Teste.Backend.service.PersonService;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -25,14 +26,13 @@ import java.time.Month;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
-@WebMvcTest(PersonController.class)
+@WebMvcTest(PersonApi.class)
 public class PersonControllerTest {
     @Autowired
     MockMvc mockMvc;
@@ -53,7 +53,7 @@ public class PersonControllerTest {
     public void givenACreatePersonRequestWhenRequestHasEmptyFieldsThenErrorStatusAndMessageAreReturned() {
         mockMvc.perform(
                 post("/teste/pessoa")
-                        .content(asJsonString(new PersonRequest()))
+                        .content(asJsonString(new PersonBaseRequest()))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest());
@@ -62,14 +62,14 @@ public class PersonControllerTest {
     @Test
     @SneakyThrows
     public void givenACreatePersonRequestWhenRequestIsCorrectlyBuiltThenRequestIsSentToService() {
-        val request = new PersonRequest();
+        val request = new PersonBaseRequest();
         request.setName("Carlos");
         request.setBirthDate(Date.valueOf(LocalDate.of(2010, Month.JANUARY,23)));
 
-        val response = request.toEntity();
-        request.setId(UUID.randomUUID());
+        val storedPerson = request.toEntity();
+        storedPerson.setPersonId(UUID.randomUUID());
 
-        Mockito.when(personService.createPerson(any())).thenReturn(PersonResponse.fromEntity(response));
+        Mockito.when(personService.createPerson(any())).thenReturn(PersonResponse.fromEntity(storedPerson));
 
         mockMvc.perform(
                         post("/teste/pessoa")
@@ -85,21 +85,19 @@ public class PersonControllerTest {
     @Test
     @SneakyThrows
     public void givenAGetPersonRequestWhenPersonExistThenReturnData() {
-        val request = new PersonRequest();
-        request.setId(UUID.randomUUID());
-        request.setName("Carlos");
-        request.setBirthDate(Date.valueOf(LocalDate.of(2010, Month.JANUARY,23)));
+        val storedPerson = new Person();
+        storedPerson.setPersonId(UUID.randomUUID());
+        storedPerson.setName("Carlos");
+        storedPerson.setBirthDate(Date.valueOf(LocalDate.of(2010, Month.JANUARY,23)));
 
-        val response = request.toEntity();
-
-        Mockito.when(personService.getPerson(any())).thenReturn(PersonResponse.fromEntity(response));
+        Mockito.when(personService.getPerson(any())).thenReturn(PersonResponse.fromEntity(storedPerson));
 
         mockMvc.perform(
-                        get(String.format("/teste/pessoa/%s",request.getId()))
+                        get(String.format("/teste/pessoa/%s",storedPerson.getPersonId()))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nome").value("Carlos"))
-                .andExpect(jsonPath("$.data_nascimento").value(request.getBirthDate().toString()));
+                .andExpect(jsonPath("$.data_nascimento").value(storedPerson.getBirthDate().toString()));
     }
     @Test
     @SneakyThrows
@@ -131,11 +129,49 @@ public class PersonControllerTest {
 
         mockMvc.perform(
                         get("/teste/pessoa")
-                                .param("rows", "2")
-                                .param("page", "1")
+                                .param("filas", "3")
+                                .param("pagina", "-1")
                 )
-                .andExpect(status().isOk());
+                .andExpect(status().isBadRequest());
     }
 
     //edit person
+
+    @Test
+    @SneakyThrows
+    public void givenAnUpdatePersonRequestWhenRequestIsCorrectlyBuiltThenRequestIsSentToService() {
+        val request = new PersonUpdateRequest();
+        request.setId(UUID.randomUUID());
+        request.setName("Carlos");
+        request.setBirthDate(Date.valueOf(LocalDate.of(2010, Month.JANUARY,23)));
+
+        val modified = request.toEntity();
+
+
+        Mockito.when(personService.editPerson(any())).thenReturn(PersonResponse.fromEntity(modified));
+
+        mockMvc.perform(
+                        put("/teste/pessoa")
+                                .content(asJsonString(request))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Carlos"))
+                .andExpect(jsonPath("$.data_nascimento").value(request.getBirthDate().toString()));
+    }
+
+    @Test
+    @SneakyThrows
+    public void givenAnUpdatePersonRequestWhenRequestIsNotCompleteThenErrorStatusAndMessageAreReturned() {
+        val request = new PersonUpdateRequest();
+        request.setName("Carlos");
+        request.setBirthDate(Date.valueOf(LocalDate.of(2010, Month.JANUARY,23)));
+
+        mockMvc.perform(
+                        put("/teste/pessoa")
+                                .content(asJsonString(request))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest());
+    }
 }

@@ -7,12 +7,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Data
-public class PersonRequest {
-    @JsonProperty("id_pessoa")
-    private UUID id;
+public class PersonBaseRequest {
     @JsonProperty("nome")
     @NotBlank(message = "O nome da pessoa deve ser informado")
     private String name;
@@ -22,7 +19,6 @@ public class PersonRequest {
     public Person toEntity(){
         Person person = new Person();
         person.setName(this.getName());
-        person.setPersonId(this.getId());
         person.setBirthDate(this.getBirthDate());
         return person;
     }

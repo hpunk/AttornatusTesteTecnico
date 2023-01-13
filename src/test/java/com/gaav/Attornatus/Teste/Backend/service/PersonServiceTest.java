@@ -1,7 +1,8 @@
 package com.gaav.Attornatus.Teste.Backend.service;
 
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedFilter;
-import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonBaseRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonUpdateRequest;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonAlreadyExistsException;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonNotFoundException;
@@ -44,7 +45,7 @@ public class PersonServiceTest {
     //Create person
     @Test
     public void givenACreatePersonRequestWhenNameAndBirthDateAreNotRegisteredYetThenPersonIsSaved(){
-        PersonRequest request = instantiateRequest();
+        PersonBaseRequest request = instantiateRequest();
 
         Person requestEntity = request.toEntity();
         Person requestEntityWithId = request.toEntity();
@@ -61,7 +62,7 @@ public class PersonServiceTest {
 
     @Test
     public void givenACreatePersonRequestWhenNameAndBirthDateAlreadyExistThenPersonExceptionIsThrown(){
-        PersonRequest request = instantiateRequest();
+        PersonBaseRequest request = instantiateRequest();
 
         Person requestEntityWithId = request.toEntity();
         requestEntityWithId.setPersonId(UUID.randomUUID());
@@ -81,7 +82,7 @@ public class PersonServiceTest {
 
         Person storedPerson = instantiatePerson(key);
 
-        PersonRequest request = instantiateRequest();
+        PersonUpdateRequest request = (PersonUpdateRequest) instantiateRequest();
         request.setId(key);
 
         Person requestEntityWithId = request.toEntity();
@@ -100,7 +101,7 @@ public class PersonServiceTest {
     public void givenAnUpdatePersonRequestWhenPersonDoesNotExistThenExceptionIsThrown(){
         final UUID key = UUID.randomUUID();
 
-        PersonRequest request = instantiateRequest();
+        PersonUpdateRequest request = (PersonUpdateRequest) instantiateRequest();
         request.setId(key);
 
         when(personRepository.findById(key)).thenReturn(Optional.empty());
@@ -174,8 +175,8 @@ public class PersonServiceTest {
         return person;
     }
 
-    private PersonRequest instantiateRequest() {
-        PersonRequest request = new PersonRequest();
+    private PersonBaseRequest instantiateRequest() {
+        PersonBaseRequest request = new PersonBaseRequest();
         request.setName("Eduarda");
         request.setBirthDate(Date.valueOf(LocalDate.of(1999, Month.JANUARY, 30)));
 

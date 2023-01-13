@@ -2,8 +2,9 @@ package com.gaav.Attornatus.Teste.Backend.service.impl;
 
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedFilter;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.base.PaginatedResponse;
-import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonRequest;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonBaseRequest;
 import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonResponse;
+import com.gaav.Attornatus.Teste.Backend.domain.controller.person.PersonUpdateRequest;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonAlreadyExistsException;
 import com.gaav.Attornatus.Teste.Backend.exceptions.PersonNotFoundException;
@@ -26,7 +27,7 @@ public class PersonServiceImpl implements PersonService {
     private final PersonPagingRepository personPagingRepository;
 
     @Override
-    public PersonResponse createPerson(PersonRequest personDto){
+    public PersonResponse createPerson(PersonBaseRequest personDto){
         val existingPerson = personRepository.findAllByNameAndBirthDate(personDto.getName(), personDto.getBirthDate());
 
         if(!existingPerson.isEmpty())
@@ -37,7 +38,7 @@ public class PersonServiceImpl implements PersonService {
     }
 
     @Override
-    public PersonResponse editPerson(PersonRequest personDto){
+    public PersonResponse editPerson(PersonUpdateRequest personDto){
         val existingPerson = getPersonById(personDto.getId());
 
         val toModify = existingPerson;
@@ -67,6 +68,8 @@ public class PersonServiceImpl implements PersonService {
                         .map(PersonResponse::fromEntity)
                         .collect(Collectors.toList())
         );
+        response.setPage(paginatedPeople.getNumber());
+        response.setRows(paginatedPeople.getSize());
         response.setCount(paginatedPeople.getTotalElements());
 
         return response;

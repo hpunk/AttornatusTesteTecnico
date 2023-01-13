@@ -13,6 +13,4 @@ public class ErrorResponse {
     private int status;
     @JsonProperty("mensagem")
     private String message;
-    @JsonProperty("detalhe")
-    private String detail;
 }

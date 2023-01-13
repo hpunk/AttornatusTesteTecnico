@@ -1,5 +1,6 @@
 package com.gaav.Attornatus.Teste.Backend.domain.controller.person;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.gaav.Attornatus.Teste.Backend.domain.entity.Person;
 import lombok.Data;
@@ -14,13 +15,13 @@ public class PersonResponse {
     @JsonProperty("nome")
     private String name;
     @JsonProperty("data_nascimento")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date birthDate;
     public static PersonResponse fromEntity(Person person){
         PersonResponse response = new PersonResponse();
         response.setId(person.getPersonId());
         response.setName(person.getName());
         response.setBirthDate(person.getBirthDate());
-        response.setId(person.getPersonId());
         return response;
     }
 }
